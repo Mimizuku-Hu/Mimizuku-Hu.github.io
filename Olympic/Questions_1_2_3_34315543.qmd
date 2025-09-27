@@ -1,0 +1,431 @@
+---
+title: "Assignment 2: Questions 1 - 3"
+author: "Zuoming Hu, 34315543"
+format: html
+editor: visual
+---
+
+## Question 1
+
+-   Medal Distribution Dominance
+
+    -   The United States leads the post-1992 medal count significantly, with over 4,600 medals. This reflects their dominance in global sports.
+    -   Germany ranks second with a considerable gap, while Russia and China have similar counts (\~800). Such data highlights disparities in regional athletic success.
+
+-   Gender Representation Progress
+
+    -   Since 2000, gender ratios in Olympic participation have become more balanced, reflecting successful gender equity initiatives.
+    -   The shift to equality, which began between 1980 and 2000, shows long-term improvements in inclusion, with policy changes driving sustained progress.
+
+-   Participation Trends Over Time
+
+    -   Athlete participation saw significant fluctuations from 1920 to 1980, followed by rapid growth and stabilization after 2000.
+    -   External factors, such as global conflicts and economic changes, likely influenced early fluctuations, while global sports development drove the growth phase.
+
+-   Age Dynamics by Gender
+
+    -   Female athletes tend to have a more concentrated age distribution in younger categories, while male athletes display a broader range with a higher average age.
+    -   These findings suggest differing career longevity or entry points for male and female athletes in elite sports.
+
+-   Top Sports by Participation
+
+    -   Athletics dominates Olympic participation, comprising 31.8% of the total, followed by swimming and cycling.
+    -   Sports like fencing and shooting, while notable, have comparatively lower participation rates, reflecting varied popularity and accessibility.
+
+-   Impact of Recent Policies
+
+    -   Policy shifts, especially after 1992, have significantly influenced participation trends and gender representation.
+    -   The success of these policies underscores the importance of continued investment in equitable and inclusive practices in global sports.
+
+## Question 2
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+library(tidyverse)
+library("tidytuesdayR")
+tuesdata <- tidytuesdayR::tt_load('2024-08-06')
+olympics <- tuesdata$olympics
+library(ggplot2)
+library(dplyr)
+library(waffle)
+library(ggwaffle)
+library(emojifont)
+library(gganimate)
+```
+
+```{r}
+#| echo: TRUE
+#| warning: FALSE
+#| fig-cap: "Caption: This plot shows global athlete participation over the years." 
+summer_data <- olympics |>
+  filter(season == "Summer")
+
+athlete_year <- summer_data |>
+  group_by(year) |>
+  summarise(count = n())
+
+plot1 <- ggplot(athlete_year, aes (x = year, y = count)) +
+  geom_line(color = "skyblue", size = 1) +
+  geom_point (color = "steelblue") +
+  labs(title = "Global Athlete Participation Over the Years",
+       x = "Year", y = "Number of Athletes",
+       caption = "Source: Olympics Data") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 25, face = "bold", hjust = 0.5),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(color = "white"),
+        panel.background = element_rect(fill = "whitesmoke"),
+        plot.background = element_rect(fill = "white", color = NA))
+
+plot1
+```
+
+```{r}
+#| echo: TRUE
+#| warning: FALSE
+#| fig-cap: "Caption: This plot shows gender representation in the Olympics over time."
+
+gender_year <- summer_data |>
+  group_by(year, sex) |>
+  summarise(count = n())
+
+plot2 <- ggplot(gender_year, aes (x = year, y = count, fill = sex)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(title = "Gender Representation in the Olympics Over Time",
+       x = "Year", y = "Number of Athletes", fill = "Gender",
+       caption = "Source: Olympics Data") +
+  scale_fill_manual(values = c("F" = "pink", "M" = "skyblue")) +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 25, face = "bold",
+                                  family = "",hjust = 0.5, color = "black"),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        legend.position = "bottom",
+        legend.title = element_text(size = 20),
+        legend.text = element_text(size = 20),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(color = "white"),
+        panel.background = element_rect(fill = "whitesmoke"),
+        plot.background = element_rect(fill = "white", color = NA))
+
+plot2
+```
+
+```{r}
+#| echo: TRUE
+#| warning: FALSE
+#| fig-cap: "Caption: This plot shows age distribution in athletics."  
+
+olympics$AgeGroup <- cut(olympics$age, breaks = c(10,20,30,40,50), right = FALSE)
+
+waffle_data <- waffle_iron(olympics,aes_d(group = AgeGroup),
+                           sample_size = 0.0005)
+
+waffle_data$label <- fontawesome('fa-male')
+
+plot3 <- ggplot(waffle_data, aes(x, y, color = group)) +
+  geom_text(aes(label=label), family = 'fontawesome-webfont', size = 12) +
+  coord_equal() +
+  scale_color_manual(values = c("[10,20)" = "#F8766D", "[20,30)" = "#00BFC4",
+                                "[30,40)" = "#619CFF", "[40,50)" = "#C77CFF")) +
+  labs(title = "Age Distribution in Athletics",
+       color = "", y = "", x = "",
+       caption = "Source: Olympics Data") +
+  theme_waffle() +
+  theme(legend.position = "left",
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        panel.grid = element_blank(),
+        plot.title = element_text(size = 25, hjust = 0.5,
+                                  vjust = -1, face = "bold"),
+        legend.text = element_text(size = 20),
+        legend.key.size = unit(2, "cm"))
+
+plot3
+```
+
+```{r}
+#| echo: TRUE
+#| warning: FALSE
+#| fig-cap: "Caption: This plot shows athletes' age density by sex (post-1992)."  
+
+post_1992 <- summer_data |>
+  filter(year > 1992, !is.na(age), age > 0, age <= 50)
+
+means <- post_1992 |>
+  group_by(sex) |>
+  summarise(mean_age = mean(age, na.rm = TRUE))
+
+plot4 <- ggplot(post_1992, aes(x = age, fill = sex)) +
+  geom_density(alpha = 0.5, color = NA) +
+  geom_vline(data = means, aes(xintercept = mean_age,
+                               color = sex, linetype = "Mean Age"),
+             linewidth = 0.7) +
+  geom_text(data = means, aes(x = mean_age, y = 0, label = round(mean_age, 1)),
+            color = "black", vjust = 1.5, size = 4.5, face = "bold") +
+  scale_fill_manual(values = c("F" = "pink", "M" = "skyblue")) +
+  scale_color_manual(values = c("F" = "pink", "M" = "skyblue"), name = "Sex") +
+  scale_linetype_manual(name = "Legend", values = c("Mean Age" = "dashed")) +
+  theme_minimal() +
+  labs(title = "Athletes' Age Density by Sex (Post-1992)",
+       x = "Age", y = "Density", fill = "Sex",
+       caption = "Source: Olympics Data") +
+  theme(plot.title = element_text(size = 25, face = "bold", hjust = 0.5),
+        axis.title = element_text(size = 20),
+        legend.title = element_text(size = 20),
+        legend.text = element_text(size = 20),
+        panel.grid.major = element_line(color = "white"),
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = "whitesmoke"),
+        plot.background = element_rect(fill = "white", color = NA),
+        legend.position = "bottom")
+
+plot4
+```
+
+```{r}
+#| echo: TRUE
+#| warning: FALSE
+#| fig-cap: "Caption: This plot shows top 6 sports by participation."
+
+top_sports <- summer_data |>
+  group_by(sport) |>
+  summarise(total_participants = n()) |>
+  top_n(6, total_participants) |>
+  mutate(percentage = total_participants / sum(total_participants) * 100) |>
+  arrange(desc(percentage)) |>
+  mutate(sport = factor(sport, levels = sport))
+
+plot5 <- ggplot(top_sports, aes(x = "", y = percentage, fill = sport)) +
+  geom_bar(stat = "identity", width = 1, color = "white") +
+  coord_polar(theta = "y") +
+  labs(title = "Top 6 Sports by Participation",
+       x= NULL, y = NULL, fill = "Sport",
+       caption = "Source: Olympics Data") +
+  scale_fill_brewer(palette = "Set3") +
+  theme_minimal() +
+  theme(legend.title = element_text(size = 20),
+        legend.text = element_text(size = 20),
+        legend.position = "left",
+        plot.title = element_text(size = 25, face = "bold", hjust = 0.5),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        panel.grid = element_blank())
+
+plot5
+```
+
+```{r}
+#| echo: TRUE
+#| warning: FALSE
+#| fig-cap: "Caption: This plot shows medal distribution for top 5 countries (post-1992)."
+
+top_country_post_1992 <- summer_data |>
+  filter(year > 1992, !is.na(medal)) |>
+  group_by(team) |>
+  summarise(count = n()) |>
+  top_n(5, count)
+
+medal_by_country <- summer_data |>
+  filter(team %in% top_country_post_1992$team, !is.na(medal)) |>
+  group_by(team, medal) |>   summarise(count = n(), .groups = "drop") |>
+  mutate(medal = factor(medal, levels = c("Bronze", "Silver", "Gold")),
+         team = factor(team, levels = c("China", "Russia", "Australia",
+                                        "Germany", "United States")))
+
+plot6 <- ggplot(medal_by_country, aes(x = count, y = team, fill = medal)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(title = "Medal Distribution for Top 5 Countries (Post-1992)",
+       x = "Number of Medals", y = "Country", fill = "Medal Type",
+       caption = "Source: Olympics Data") +
+  scale_fill_manual(values = c("Gold" = "#FFD700",
+                               "Silver" = "#C0C0C0",
+                               "Bronze" = "#CD7F32")) +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 25, face = "bold", hjust = 0.5),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        legend.position = "bottom",
+        legend.title = element_text(size = 20),
+        legend.text = element_text(size = 20),
+        panel.grid.major = element_line(color = "white"),
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = "whitesmoke"),
+        plot.background = element_rect(fill = "white", color = NA))
+
+plot6
+```
+
+## Question 3
+
+```{r}
+#| echo: TRUE
+#| warning: FALSE
+#| fig-cap: "Caption: I highlighted key phases of fluctuation, rapid increase, and plateau in athlete participation with shaded regions and descriptive labels."  
+
+plot1_info <- plot1 +
+  annotate("rect", xmin = 1920, xmax = 1980, ymin = -Inf, ymax = Inf,
+           fill = "lightblue", alpha = 0.2) +
+  annotate("rect", xmin = 1920, xmax = 1980, ymin = 14500, ymax = 15500,
+           fill = "black", alpha = 0.4) +
+  annotate("text", x = 1950, y = 15000, label = "Significant Fluctuations",
+           color = "lightblue", size = 5.5, fontface = "bold") +
+  annotate("rect", xmin = 1980, xmax = 2000, ymin = -Inf, ymax = Inf,
+           fill = "pink", alpha = 0.2) +
+  annotate("rect", xmin = 1980, xmax = 2000, ymin = 17500, ymax = 18500,
+           fill = "black", alpha = 0.4) +
+  annotate("text", x = 1990, y = 18000, label = "Rapid Increase",
+           color = "pink", size = 5.5, fontface = "bold") +
+  annotate("rect", xmin = 2000, xmax = 2020, ymin = -Inf, ymax = Inf,
+           fill = "#98FB98", alpha = 0.2) +
+  annotate("rect", xmin = 2000, xmax = 2020, ymin = 19500, ymax = 20500,
+           fill = "black", alpha = 0.4) +
+  annotate("text", x = 2010, y = 20000, label = "Plateau",
+           color = "#98FB98", size = 5.5, fontface = "bold")
+
+plot1_info
+```
+
+```{r}
+#| echo: TRUE
+#| warning: FALSE
+#| fig-cap: "Caption: I added annotations to emphasize the significant gender parity shift since 2000, using shaded areas and directional arrows."
+
+plot2_info <- plot2 +
+  annotate("rect", xmin = 1979, xmax = 2001, ymin = 2500, ymax = 4500,
+           fill = "black", alpha = 0.8) +
+  annotate("rect", xmin = 1979, xmax = 2001, ymin = 0, ymax = 14000,
+           fill = "lightblue", alpha = 0.4) +
+  annotate("text", x = 1990, y = 3900, label = "Significant Gender",
+           color = "pink", size = 5.5, fontface = "bold") +
+  annotate("text", x = 1990, y = 3100, label = "Parity Shift",
+           color = "pink", size = 5.5, fontface = "bold") +
+  annotate("segment", x = 1965, xend = 2000, y = 12500, yend = 12500,
+           arrow = arrow(length = unit(0.3, "cm")), color = "steelblue") +
+  annotate("label", x = 1936, y = 12500,
+           label = " Since 2000, the gender ratio has tended to be evenly distributed.",
+           color = "steelblue", fill = "white", size = 5.5,
+           fontface = "italic", label.size = 0.5)
+
+plot2_info
+```
+
+```{r}
+#| echo: TRUE
+#| warning: FALSE
+#| fig-cap: "Caption: I added animations to make plot look better."
+
+plot3_info <- plot3 +
+  transition_states(states = group,
+                    transition_length = 2,
+                    state_length = 1,
+                    wrap = FALSE) +
+  enter_fade(alpha = 0) +
+  exit_fade(alpha = 0) +
+  shadow_mark()
+
+animate(plot3_info,
+        nframes = 100,
+        fps = 20,
+        width = 10,
+        height = 10,
+        end_pause = 10)
+
+anim_save(".",
+          animation = last_animation())
+```
+
+```{r}
+#| echo: TRUE
+#| warning: FALSE
+#| fig-cap: "Caption: I annotated the chart to highlight the younger concentration of female athletes and the higher average age of male athletes with labels and arrows."
+
+plot4_info <- plot4 +
+  annotate("rect", xmin = 32, xmax = 48, ymin = 0.06, ymax = 0.075,
+           fill = "lightpink", alpha = 0.1) +
+  annotate("text", x = 40, y = 0.07,
+           label = "The density distribution of female athletes",
+           color = "black", size = 5.5, fontface = "italic") +
+  annotate("text", x = 40, y = 0.065,
+           label = "is more concentrated in the younger age range.",
+           color = "black", size = 5.5, fontface = "italic") +
+  annotate("rect", xmin = 15.9, xmax = 35, ymin = 0.01, ymax = 0.02,
+           fill = "black", alpha = 0.4) +
+  annotate("segment", x = 26.2, xend = 24.7, y = 0.025, yend = 0.025,
+           arrow = arrow(length = unit(0.15, "cm"), type = "closed"),
+           color = "white", size = 0.7) +
+  annotate("text", x = 25.45, y = 0.015,
+           label = "The average age of male is higher than that of female.",
+           color = "white", size = 5.5, fontface = "bold")
+
+plot4_info
+```
+
+```{r}
+#| echo: TRUE
+#| warning: FALSE
+#| fig-cap: "Caption: I added percentage labels for each sport segment in the pie chart to clearly display their respective participation proportions."
+
+plot5_info <- plot5 +
+  geom_text(aes(label = paste0(round(percentage, 1), "%")),
+            position = position_stack(vjust = 0.55),
+            size = 6.5, color = "black", fontface = "bold")
+
+plot5_info
+```
+
+```{r}
+#| echo: TRUE
+#| warning: FALSE
+#| fig-cap: "Caption: I annotated medal counts for each country and highlighted key observations, such as the dominance of the United States and the similar medal counts of Russia and China, with arrows and text boxes."
+
+plot6_info <- plot6 +
+  annotate("label", x = 4000, y = 3.5,
+           label = " USA: Dominant medal count.",
+           color = "white", fill = "#800000", size = 5.5,
+           fontface = "bold", label.size = 0.5) +
+  annotate("segment", x = 4000, xend = 4000, y = 4.8, yend = 3.6,
+           color = "#800000", size = 1) +
+  annotate("point", x = 4000, y = 4.8, color = "white", size = 3) +
+  annotate("label", x = 2500, y = 1.5,
+           label = " Russia and China: Similar counts.",
+           color = "white", fill = "#4682B4", size = 5.5,
+           fontface = "bold", label.size = 0.5) +
+  annotate("rect", xmin = -400, xmax = 0, ymin = -Inf, ymax = Inf,
+           fill = "black", alpha = 0.3) +
+  annotate("segment", x = 740, xend = 1650, y = 1, yend = 1.5,
+           color = "#4682B4", size = 1) +
+  annotate("point", x = 740, y = 1, color = "white", size = 3) +
+  annotate("segment", x = 800, xend = 1650, y = 2, yend = 1.5,
+           color = "#4682B4", size = 1) +
+  annotate("point", x = 800, y = 2, color = "white", size = 3) +
+  annotate("text", x = -200, y = 5, label = "4686", fontface ="bold",
+           color = "white", size = 5.5) +
+  annotate("text", x = -200, y = 4, label = "1687", fontface ="bold",
+           color = "white", size = 5.5) +
+  annotate("text", x = -200, y = 3, label = "1290", fontface ="bold",
+           color = "white", size = 5.5) +
+  annotate("text", x = -200, y = 2, label = "894", fontface ="bold",
+           color = "white", size = 5.5) +
+  annotate("text", x = -200, y = 1, label = "831", fontface ="bold",
+           color = "white", size = 5.5) +
+  annotate("text", x = -200, y = 5.5, label = "Total", fontface ="bold",
+           color = "white", size = 5.5)
+
+plot6_info
+```
+
+#### Discussion
+
+The primary audience for this project includes the International Olympic Committee (IOC) and the general public, reached through media storytelling.
+
+For the IOC, the focus is on providing detailed, actionable insights. The visualizations include precise annotations, such as medal counts and gender distribution trends, to support policy-making and program evaluation. These insights help identify areas for improvement, such as gender equity and regional participation.
+
+For the general public, the medium of storytelling in media simplifies the data into visually appealing and engaging formats. The charts emphasize key narratives, such as the rise in athlete participation or the most popular Olympic sports, to inspire and connect with a wider audience.
+
+By balancing professional rigor with accessible storytelling, the visualizations effectively serve both audiences while highlighting the values and evolution of the Olympic Games.

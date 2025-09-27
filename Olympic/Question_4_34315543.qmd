@@ -1,0 +1,394 @@
+---
+title: Question 4
+author: "Zuoming Hu, 34315543"
+format: closeread-html
+---
+
+## **A Century of Progress in the Olympics**
+
+::::::::: cr-section
+The story of the modern Olympics begins with gradual growth. From the early 1900s to 1980, athlete participation fluctuated due to global events like wars and economic challenges. Post-1980, however, a rapid increase in participation marked a new era, driven by globalization and enhanced sports funding. By 2000, participation reached a plateau, signaling maturity in global representation. @cr-plot1
+
+::: {#cr-plot1}
+-   **Global Growth in Athlete Participation**
+
+```{r}
+#| echo: FALSE
+#| message: FALSE 
+#| warning: FALSE
+library(tidyverse)
+library("tidytuesdayR")
+tuesdata <- tidytuesdayR::tt_load('2024-08-06')
+olympics <- tuesdata$olympics
+library(ggplot2)
+library(dplyr)
+library(waffle)
+library(ggwaffle)
+library(emojifont)
+library(gganimate)
+```
+
+```{r}
+#| echo: FALSE
+#| warning: FALSE
+
+summer_data <- olympics |>
+  filter(season == "Summer")
+
+athlete_year <- summer_data |>
+  group_by(year) |>
+  summarise(count = n())
+
+plot1 <- ggplot(athlete_year, aes (x = year, y = count)) +
+  geom_line(color = "skyblue", size = 1) +
+  geom_point (color = "steelblue") +
+  labs(title = "Global Athlete Participation Over the Years",
+       x = "Year", y = "Number of Athletes",
+       caption = "Source: Olympics Data") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 25, face = "bold", hjust = 0.5),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(color = "white"),
+        panel.background = element_rect(fill = "whitesmoke"),
+        plot.background = element_rect(fill = "white", color = NA)) +
+  
+  annotate("rect", xmin = 1920, xmax = 1980, ymin = -Inf, ymax = Inf,
+           fill = "lightblue", alpha = 0.2) +
+  annotate("rect", xmin = 1920, xmax = 1980, ymin = 14500, ymax = 15500,
+           fill = "black", alpha = 0.4) +
+  annotate("text", x = 1950, y = 15000, label = "Significant Fluctuations",
+           color = "lightblue", size = 5.5, fontface = "bold") +
+  annotate("rect", xmin = 1980, xmax = 2000, ymin = -Inf, ymax = Inf,
+           fill = "pink", alpha = 0.2) +
+  annotate("rect", xmin = 1980, xmax = 2000, ymin = 17500, ymax = 18500,
+           fill = "black", alpha = 0.4) +
+  annotate("text", x = 1990, y = 18000, label = "Rapid Increase",
+           color = "pink", size = 5.5, fontface = "bold") +
+  annotate("rect", xmin = 2000, xmax = 2020, ymin = -Inf, ymax = Inf,
+           fill = "#98FB98", alpha = 0.2) +
+  annotate("rect", xmin = 2000, xmax = 2020, ymin = 19500, ymax = 20500,
+           fill = "black", alpha = 0.4) +
+  annotate("text", x = 2010, y = 20000, label = "Plateau",
+           color = "#98FB98", size = 5.5, fontface = "bold")
+
+plot1
+```
+:::
+
+<!-- Below I define another closeread object and use the reference label for that object  -->
+
+The Olympics reflect society's evolving values, and gender equity is no exception. Before 1980, females' participation lagged significantly. A transformation began in the 1980s, and by 2000, gender ratios approached parity. This shift highlights decades of advocacy and reforms, underscoring the Olympics as a platform for progress in equity and representation. @cr-plot2
+
+::: {#cr-plot2}
+-   **Advancing Gender Equity in Sports**
+
+```{r}
+#| echo: FALSE
+#| warning: FALSE
+
+gender_year <- summer_data |>
+  group_by(year, sex) |>
+  summarise(count = n())
+
+plot2 <- ggplot(gender_year, aes (x = year, y = count, fill = sex)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(title = "Gender Representation in the Olympics Over Time",
+       x = "Year", y = "Number of Athletes", fill = "Gender",
+       caption = "Source: Olympics Data") +
+  scale_fill_manual(values = c("F" = "pink", "M" = "skyblue")) +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 25, face = "bold",
+                                  family = "",hjust = 0.5, color = "black"),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        legend.position = "bottom",
+        legend.title = element_text(size = 20),
+        legend.text = element_text(size = 20),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(color = "white"),
+        panel.background = element_rect(fill = "whitesmoke"),
+        plot.background = element_rect(fill = "white", color = NA)) +
+  
+  annotate("rect", xmin = 1979, xmax = 2001, ymin = 2500, ymax = 4500,
+           fill = "black", alpha = 0.8) +
+  annotate("rect", xmin = 1979, xmax = 2001, ymin = 0, ymax = 14000,
+           fill = "lightblue", alpha = 0.4) +
+  annotate("text", x = 1990, y = 3900, label = "Significant Gender",
+           color = "pink", size = 5.5, fontface = "bold") +
+  annotate("text", x = 1990, y = 3100, label = "Parity Shift",
+           color = "pink", size = 5.5, fontface = "bold") +
+  annotate("segment", x = 1965, xend = 2000, y = 12500, yend = 12500,
+           arrow = arrow(length = unit(0.3, "cm")), color = "steelblue") +
+  annotate("label", x = 1936, y = 12500,
+           label = " Since 2000, the gender ratio has tended to be evenly distributed.",
+           color = "steelblue", fill = "white", size = 5.5,
+           fontface = "italic", label.size = 0.5)
+
+plot2
+```
+:::
+
+Athletes' ages offer a glimpse into the physical demands of sports. Most athletes cluster in the 20-30 age range, reflecting peak physical performance. Interestingly, a smaller yet consistent presence of athletes in their 30s and 40s indicates the longevity of sporting careers in less physically intense disciplines, showcasing the adaptability of sports to various age groups. @cr-plot3
+
+::: {#cr-plot3}
+-   **Age Dynamics in Athletics**
+
+```{r}
+#| echo: FALSE
+#| warning: FALSE
+
+olympics$AgeGroup <- cut(olympics$age, breaks = c(10,20,30,40,50), right = FALSE)
+
+waffle_data <- waffle_iron(olympics,aes_d(group = AgeGroup),
+                           sample_size = 0.0005)
+
+waffle_data$label <- fontawesome('fa-male')
+
+plot3 <- ggplot(waffle_data, aes(x, y, color = group)) +
+  geom_text(aes(label=label), family = 'fontawesome-webfont', size = 12) +
+  coord_equal() +
+  scale_color_manual(values = c("[10,20)" = "#F8766D", "[20,30)" = "#00BFC4",
+                                "[30,40)" = "#619CFF", "[40,50)" = "#C77CFF")) +
+  labs(title = "Age Distribution in Athletics",
+       color = "", y = "", x = "",
+       caption = "Source: Olympics Data") +
+  theme_waffle() +
+  theme(legend.position = "left",
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        panel.grid = element_blank(),
+        plot.title = element_text(size = 25, hjust = 0.5,
+                                  vjust = -1, face = "bold"),
+        legend.text = element_text(size = 20),
+        legend.key.size = unit(2, "cm")) +
+  
+  transition_states(states = group,
+                    transition_length = 2,
+                    state_length = 1,
+                    wrap = FALSE) +
+  enter_fade(alpha = 0) +
+  exit_fade(alpha = 0) +
+  shadow_mark()
+
+animate(plot3,
+        nframes = 100,
+        fps = 20,
+        width = 10,
+        height = 10,
+        end_pause = 10)
+
+anim_save(".",
+          animation = last_animation())
+
+plot3
+```
+:::
+
+Gendered dynamics reveal deeper stories about sports. Female athletes tend to peak at younger ages, while males demonstrate a broader age range and higher average age. This may be attributed to different career trajectories, physiological factors, or societal expectations, providing critical insights for talent development and coaching strategies. @cr-plot4
+
+::: {#cr-plot4}
+-   **Comparing Age Density by Gender**
+
+```{r}
+#| echo: FALSE
+#| warning: FALSE
+
+post_1992 <- summer_data |>
+  filter(year > 1992, !is.na(age), age > 0, age <= 50)
+
+means <- post_1992 |>
+  group_by(sex) |>
+  summarise(mean_age = mean(age, na.rm = TRUE))
+
+plot4 <- ggplot(post_1992, aes(x = age, fill = sex)) +
+  geom_density(alpha = 0.5, color = NA) +
+  geom_vline(data = means, aes(xintercept = mean_age,
+                               color = sex, linetype = "Mean Age"),
+             linewidth = 0.7) +
+  geom_text(data = means, aes(x = mean_age, y = 0, label = round(mean_age, 1)),
+            color = "black", vjust = 1.5, size = 4.5, face = "bold") +
+  scale_fill_manual(values = c("F" = "pink", "M" = "skyblue")) +
+  scale_color_manual(values = c("F" = "pink", "M" = "skyblue"), name = "Sex") +
+  scale_linetype_manual(name = "Legend", values = c("Mean Age" = "dashed")) +
+  theme_minimal() +
+  labs(title = "Athletes' Age Density by Sex (Post-1992)",
+       x = "Age", y = "Density", fill = "Sex",
+       caption = "Source: Olympics Data") +
+  theme(plot.title = element_text(size = 25, face = "bold", hjust = 0.5),
+        axis.title = element_text(size = 20),
+        legend.title = element_text(size = 20),
+        legend.text = element_text(size = 20),
+        panel.grid.major = element_line(color = "white"),
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = "whitesmoke"),
+        plot.background = element_rect(fill = "white", color = NA),
+        legend.position = "bottom") +
+  
+  annotate("rect", xmin = 32, xmax = 48, ymin = 0.06, ymax = 0.075,
+           fill = "lightpink", alpha = 0.1) +
+  annotate("text", x = 40, y = 0.07,
+           label = "The density distribution of female athletes",
+           color = "black", size = 5.5, fontface = "italic") +
+  annotate("text", x = 40, y = 0.065,
+           label = "is more concentrated in the younger age range.",
+           color = "black", size = 5.5, fontface = "italic") +
+  annotate("rect", xmin = 15.9, xmax = 35, ymin = 0.01, ymax = 0.02,
+           fill = "black", alpha = 0.4) +
+  annotate("segment", x = 26.2, xend = 24.7, y = 0.025, yend = 0.025,
+           arrow = arrow(length = unit(0.15, "cm"), type = "closed"),
+           color = "white", size = 0.7) +
+  annotate("text", x = 25.45, y = 0.015,
+           label = "The average age of male is higher than that of female.",
+           color = "white", size = 5.5, fontface = "bold")
+
+plot4
+```
+:::
+
+Athletics reigns supreme, accounting for nearly one-third of Olympic participation. Its accessibility and universality make it a cornerstone of the Games. Swimming and cycling follow as highly popular sports, while fencing and shooting cater to niche yet enduringly significant audiences. This distribution reveals the diverse appeal of Olympic sports. @cr-plot5
+
+::: {#cr-plot5}
+-   **Sports that Shape the Olympics**
+
+```{r}
+#| echo: FALSE
+#| warning: FALSE
+
+top_sports <- summer_data |>
+  group_by(sport) |>
+  summarise(total_participants = n()) |>
+  top_n(6, total_participants) |>
+  mutate(percentage = total_participants / sum(total_participants) * 100) |>
+  arrange(desc(percentage)) |>
+  mutate(sport = factor(sport, levels = sport))
+
+plot5 <- ggplot(top_sports, aes(x = "", y = percentage, fill = sport)) +
+  geom_bar(stat = "identity", width = 1, color = "white") +
+  coord_polar(theta = "y") +
+  labs(title = "Top 6 Sports by Participation",
+       x= NULL, y = NULL, fill = "Sport",
+       caption = "Source: Olympics Data") +
+  scale_fill_brewer(palette = "Set3") +
+  theme_minimal() +
+  theme(legend.title = element_text(size = 20),
+        legend.text = element_text(size = 20),
+        legend.position = "left",
+        plot.title = element_text(size = 25, face = "bold", hjust = 0.5),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        panel.grid = element_blank()) +
+  
+  geom_text(aes(label = paste0(round(percentage, 1), "%")),
+            position = position_stack(vjust = 0.55),
+            size = 6.5, color = "black", fontface = "bold")
+
+plot5
+```
+:::
+
+Medal counts tell the story of competition and dominance. The United States leads by a wide margin, showcasing its sporting infrastructure and investment. Germany follows, with Russia and China contributing significantly. These figures illustrate regional disparities and highlight the global nature of Olympic achievement. @cr-plot6
+
+::: {#cr-plot6}
+-   **Medal Distribution Across Countries**
+
+```{r}
+#| echo: FALSE
+#| warning: FALSE
+
+top_country_post_1992 <- summer_data |>
+  filter(year > 1992, !is.na(medal)) |>
+  group_by(team) |>
+  summarise(count = n()) |>
+  top_n(5, count)
+
+medal_by_country <- summer_data |>
+  filter(team %in% top_country_post_1992$team, !is.na(medal)) |>
+  group_by(team, medal) |>   summarise(count = n(), .groups = "drop") |>
+  mutate(medal = factor(medal, levels = c("Bronze", "Silver", "Gold")),
+         team = factor(team, levels = c("China", "Russia", "Australia",
+                                        "Germany", "United States")))
+
+plot6 <- ggplot(medal_by_country, aes(x = count, y = team, fill = medal)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(title = "Medal Distribution for Top 5 Countries (Post-1992)",
+       x = "Number of Medals", y = "Country", fill = "Medal Type",
+       caption = "Source: Olympics Data") +
+  scale_fill_manual(values = c("Gold" = "#FFD700",
+                               "Silver" = "#C0C0C0",
+                               "Bronze" = "#CD7F32")) +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 25, face = "bold", hjust = 0.5),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        legend.position = "bottom",
+        legend.title = element_text(size = 20),
+        legend.text = element_text(size = 20),
+        panel.grid.major = element_line(color = "white"),
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = "whitesmoke"),
+        plot.background = element_rect(fill = "white", color = NA)) +
+  
+  annotate("label", x = 4000, y = 3.5,
+           label = " USA: Dominant medal count.",
+           color = "white", fill = "#800000", size = 5.5,
+           fontface = "bold", label.size = 0.5) +
+  annotate("segment", x = 4000, xend = 4000, y = 4.8, yend = 3.6,
+           color = "#800000", size = 1) +
+  annotate("point", x = 4000, y = 4.8, color = "white", size = 3) +
+  annotate("label", x = 2500, y = 1.5,
+           label = " Russia and China: Similar counts.",
+           color = "white", fill = "#4682B4", size = 5.5,
+           fontface = "bold", label.size = 0.5) +
+  annotate("rect", xmin = -400, xmax = 0, ymin = -Inf, ymax = Inf,
+           fill = "black", alpha = 0.3) +
+  annotate("segment", x = 740, xend = 1650, y = 1, yend = 1.5,
+           color = "#4682B4", size = 1) +
+  annotate("point", x = 740, y = 1, color = "white", size = 3) +
+  annotate("segment", x = 800, xend = 1650, y = 2, yend = 1.5,
+           color = "#4682B4", size = 1) +
+  annotate("point", x = 800, y = 2, color = "white", size = 3) +
+  annotate("text", x = -200, y = 5, label = "4686", fontface ="bold",
+           color = "white", size = 5.5) +
+  annotate("text", x = -200, y = 4, label = "1687", fontface ="bold",
+           color = "white", size = 5.5) +
+  annotate("text", x = -200, y = 3, label = "1290", fontface ="bold",
+           color = "white", size = 5.5) +
+  annotate("text", x = -200, y = 2, label = "894", fontface ="bold",
+           color = "white", size = 5.5) +
+  annotate("text", x = -200, y = 1, label = "831", fontface ="bold",
+           color = "white", size = 5.5) +
+  annotate("text", x = -200, y = 5.5, label = "Total", fontface ="bold",
+           color = "white", size = 5.5)
+
+plot6
+```
+:::
+
+This six-part journey through the Olympics showcases its transformation from a modest event to a global celebration of inclusivity, excellence, and diversity. Each visual tells a unique chapter of progress, helping us understand how sports reflect broader societal trends.
+:::::::::
+
+## Citations
+
+-   Cite R
+
+    R Core Team (2023). *R: A Language and Environment for Statistical Computing*. R Foundation for Statistical Computing, Vienna, Austria. <https://www.R-project.org>
+
+-   Cite R Packages used
+
+    Wickham H, Averick M, Bryan J, Chang W, McGowan LD, François R, Grolemund G, Hayes A, Henry L, Hester J, Kuhn M, Pedersen TL, Miller E, Bache SM, Müller K, Ooms J, Robinson D, Seidel DP, Spinu V, Takahashi K, Vaughan D, Wilke C, Woo K, Yutani H (2019). “Welcome to the tidyverse.” \_Journal of Open Source Software\_, \*4\*(43), 1686. doi:10.21105/joss.01686. <https://doi.org/10.21105/joss.01686>
+
+    Harmon J, Hughes E (2024). \_tidytuesdayR: Access the Weekly 'TidyTuesday' Project Dataset\_. R package version 1.1.2. <https://CRAN.R-project.org/package=tidytuesdayR>
+
+    Gilbey L (2022). *ggwaffle: Waffle Charts*. R package version 0.2.5, <https://github.com/liamgilbey/ggwaffle>.
+
+    Pedersen T, Robinson D (2024). *gganimate: A Grammar of Animated Graphics*. R package version 1.0.9.9000, [https://gganimate.com](https://gganimate.com/).
+
+    Guangchuang Yu (2016). emojifont: Emoji and Font Awesome in Graphics. R package version 0.5.5, <https://cran.r-project.org/web/packages/emojifont.>
+
+-   Data set: Olympics Data
+
+-   AI acknowledgement
+
+    I used ChatGPT to fix the faulty code.
